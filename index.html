@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#79cfff">
+<title>Payment Store</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#6fd4ff;
+  --blue2:#2b8fff;
+  --glass:rgba(235,249,255,.28);
+  --line:rgba(137,220,255,.8);
+  --text:#fff;
+}
+body{
+  min-height:100vh;
+  font-family:Georgia,"Times New Roman",serif;
+  color:var(--text);
+  overflow-x:hidden;
+  background-color:#12345f;
+  background-image:var(--page-bg,linear-gradient(180deg,#a9e6ff 0%,#6dbce8 35%,#3676b9 68%,#12345f 100%));
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.35),transparent 38%),
+    repeating-radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.12) 0 2px,transparent 3px 34px);
+  pointer-events:none;
+}
+.wrap{width:min(520px,94%);margin:auto;padding:18px 0 30px}
+.topbar{
+  height:32px;padding:6px 10px;border-radius:10px;
+  background:rgba(20,72,110,.55);border:1px solid rgba(255,255,255,.4);
+  box-shadow:0 0 18px rgba(0,170,255,.35);
+  display:flex;justify-content:space-between;align-items:center;
+  font:700 12px Arial,sans-serif;
+}
+.hero{
+  margin-top:10px;height:220px;border-radius:22px;
+  border:2px solid rgba(255,255,255,.55);
+  box-shadow:0 0 25px #67cfff, inset 0 0 35px rgba(255,255,255,.35);
+  background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.9) 0 8px,transparent 10px),
+    radial-gradient(circle at 72% 35%,rgba(255,255,255,.8) 0 12px,transparent 14px),
+    linear-gradient(180deg,rgba(255,255,255,.55),rgba(107,205,255,.16));
+  display:flex;align-items:flex-end;justify-content:center;position:relative;
+  overflow:visible;
+}
+.hero.has-image{background-image:linear-gradient(rgba(0,25,50,.18),rgba(0,25,50,.18)),var(--hero-bg);background-size:cover;background-position:center;}
+.avatar.has-image{background-image:var(--avatar-bg);background-size:cover;background-position:center;background-repeat:no-repeat;}
+.avatar.has-image::first-letter{visibility:hidden;}
+.hero:after{
+  content:"✦  ✧  ○  ✦  ○  ✧";
+  position:absolute;top:25px;left:0;right:0;text-align:center;
+  font-size:25px;letter-spacing:10px;color:rgba(255,255,255,.8);
+}
+.avatar{
+  width:82px;height:82px;border-radius:50%;position:absolute;bottom:-41px;
+  border:3px solid #9edfff;
+  background:linear-gradient(135deg,#eafaff,#6ccaff 55%,#2477ca);
+  box-shadow:0 0 25px #3bc4ff;
+  display:grid;place-items:center;font-size:30px;
+}
+.title{
+  text-align:center;margin:57px 0 25px;font-size:30px;
+  letter-spacing:4px;text-shadow:0 0 10px #fff,0 0 25px #39bfff;
+  font-style:italic;
+}
+.sub{text-align:center;margin-top:-18px;margin-bottom:18px;font:11px Arial,sans-serif;letter-spacing:3px;opacity:.85}
+.buttons{display:grid;gap:12px}
+.pay{
+  width:100%;min-height:76px;border:1px solid rgba(255,255,255,.55);
+  border-radius:18px;background:rgba(235,249,255,.48);
+  color:#123a58;cursor:pointer;font-weight:800;font-size:22px;
+  box-shadow:0 7px 20px rgba(0,52,100,.18),inset 0 0 18px rgba(255,255,255,.35);
+  transition:.2s;backdrop-filter:blur(8px);
+}
+.pay:hover{transform:translateY(-2px);box-shadow:0 0 24px #6edaff}
+.pay:active{transform:scale(.98)}
+.icon{font-family:Arial,sans-serif;font-size:18px;margin-right:7px}
+.pay-photo{
+  width:100%;height:76px;object-fit:contain;display:block;border-radius:16px;
+  pointer-events:none;
+}
+.pay-photo[src=""], .pay-photo:not([src]){display:none}
+.pay.has-photo{padding:0;overflow:hidden}
+.pay.has-photo .pay-label{display:none}
+.pay-label{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+
+.note{font:11px Arial,sans-serif;text-align:center;opacity:.8;margin:15px 0}
+.player{
+  margin-top:28px;padding:20px 18px;border:2px solid #2bbcff;border-radius:20px;
+  background:rgba(0,0,0,.45);box-shadow:0 0 18px #20bfff,inset 0 0 20px rgba(0,172,255,.12);
+  text-align:center;backdrop-filter:blur(8px)
+}
+.controls{display:flex;justify-content:center;gap:28px;align-items:center}
+.ctrl{background:none;border:0;color:#fff;font-size:24px;cursor:pointer}
+.play{font-size:30px}
+.song{margin:13px 0 9px;font-size:12px;letter-spacing:4px}
+.music-file{display:none}
+.wave{height:25px;display:flex;gap:4px;align-items:center;justify-content:center}
+.wave i{display:block;width:4px;height:8px;border-radius:5px;background:#1ee8ff;box-shadow:0 0 7px #1ee8ff}
+.playing .wave i{animation:b 1s ease-in-out infinite alternate}
+.wave i:nth-child(2){animation-delay:.1s}.wave i:nth-child(3){animation-delay:.2s}.wave i:nth-child(4){animation-delay:.3s}.wave i:nth-child(5){animation-delay:.4s}
+@keyframes b{to{height:23px}}
+.footer{text-align:center;font:10px Arial,sans-serif;margin-top:18px;opacity:.75}
+.modal{
+  position:fixed;inset:0;background:rgba(2,22,40,.72);display:none;align-items:center;justify-content:center;
+  padding:20px;z-index:10;backdrop-filter:blur(7px)
+}
+.modal.show{display:flex}
+.card{
+  width:min(720px,96vw);max-height:94vh;overflow:auto;border-radius:24px;padding:18px;text-align:center;
+  background:linear-gradient(145deg,rgba(224,248,255,.96),rgba(115,205,255,.92));
+  color:#123a58;border:2px solid #b7eeff;box-shadow:0 0 35px #48caff;
+}
+.card h2{margin-bottom:12px}
+.qr{
+  width:min(620px,90vw);height:min(620px,72vh);margin:12px auto;border-radius:18px;background:#fff;
+  display:grid;place-items:center;padding:12px;box-shadow:0 0 18px rgba(0,0,0,.2)
+}
+.qr img{width:100%;height:100%;object-fit:contain;border-radius:10px}
+.close{
+  border:0;border-radius:12px;padding:11px 20px;background:#176da7;color:white;
+  cursor:pointer;font-weight:700;margin-top:8px
+}
+.number{
+  margin:14px auto;padding:13px;border-radius:14px;background:rgba(255,255,255,.55);
+  font:700 20px Arial,sans-serif;word-break:break-all
+}
+.toast{
+  position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);
+  opacity:0;background:#0e527d;color:#fff;padding:12px 18px;border-radius:30px;
+  font:700 13px Arial,sans-serif;transition:.25s;z-index:20;box-shadow:0 0 18px #4bd0ff
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Falling winter emotes */
+.snow-emotes{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:50}
+.snow-emote{position:absolute;top:-12vh;left:var(--x);font-size:var(--size);opacity:var(--opacity);filter:drop-shadow(0 0 5px rgba(255,255,255,.75));animation:fall var(--duration) linear var(--delay) infinite;will-change:transform}
+@keyframes fall{0%{transform:translate3d(0,-12vh,0) rotate(0deg)}25%{transform:translate3d(var(--sway1),25vh,0) rotate(90deg)}50%{transform:translate3d(var(--sway2),50vh,0) rotate(180deg)}75%{transform:translate3d(var(--sway3),75vh,0) rotate(270deg)}100%{transform:translate3d(var(--sway4),112vh,0) rotate(360deg)}}
+
+/* ===== GLOSSY CAHAYA BIRU DI SAMPING BUTTON ===== */
+.pay{position:relative;overflow:hidden;border-color:rgba(150,235,255,.9);box-shadow:-5px 0 12px rgba(0,190,255,.45),5px 0 12px rgba(0,190,255,.45),0 7px 20px rgba(0,52,100,.18),inset 0 0 18px rgba(255,255,255,.35)}
+.pay::before{content:"";position:absolute;top:8%;bottom:8%;left:-3px;width:4px;border-radius:10px;background:#8eeeff;box-shadow:0 0 6px #8eeeff,0 0 14px #25cfff,0 0 28px #008cff,0 0 42px rgba(0,140,255,.8);animation:blueSideGlow 1.8s ease-in-out infinite alternate;pointer-events:none;z-index:3}
+.pay::after{content:"";position:absolute;top:8%;bottom:8%;right:-3px;width:4px;border-radius:10px;background:#8eeeff;box-shadow:0 0 6px #8eeeff,0 0 14px #25cfff,0 0 28px #008cff,0 0 42px rgba(0,140,255,.8);animation:blueSideGlow 1.8s ease-in-out infinite alternate-reverse;pointer-events:none;z-index:3}
+.pay:hover{box-shadow:-9px 0 22px rgba(0,205,255,.8),9px 0 22px rgba(0,205,255,.8),0 0 24px rgba(40,180,255,.5),inset 0 0 18px rgba(255,255,255,.4)}
+.pay:active{box-shadow:-7px 0 18px rgba(0,220,255,.95),7px 0 18px rgba(0,220,255,.95),0 0 28px rgba(20,160,255,.65),inset 0 0 20px rgba(255,255,255,.35)}
+@keyframes blueSideGlow{from{opacity:.45;filter:brightness(.9)}to{opacity:1;filter:brightness(1.45)}}
+</style>
+</head>
+<body>
+<div class="snow-emotes" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="topbar"><span id="clock">00:00:00</span><span>● ONLINE</span></div>
+
+  <section class="hero" id="hero">
+    <div class="avatar" id="avatar">✦</div>
+  </section>
+
+  <h1 class="title" id="storeName">ANZLLAA STORE</h1>
+  <div class="sub">PAYMENT CENTER • FAST & SIMPLE</div>
+
+  <div class="buttons">
+    <!-- Ganti src dengan foto/logo tombol milikmu -->
+    <button class="pay has-photo" onclick="showQRIS()">
+      <img class="pay-photo" src="https://github.com/TanzManuel/qrisanzllaa/blob/main/logoqris.png?raw=true" alt="QRIS">
+      <span class="pay-label"><span class="icon">▣</span>QRIS</span>
+    </button>
+    <button class="pay has-photo" onclick="openLink('https://chat.whatsapp.com/DWHMz7bHjpsFDNivSdZmbc')">
+      <img class="pay-photo" src="https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/anzllaa_whatsapp.png" alt="Grup WhatsApp">
+      <span class="pay-label"><span class="icon">◉</span>GRUP WA</span>
+    </button>
+    <button class="pay has-photo" onclick="openLink('https://t.me/anzllaa_bot')">
+      <img class="pay-photo" src="https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/anzllaa_telegram.png" alt="Bot Telegram">
+      <span class="pay-label"><span class="icon">✈</span>BOT TELE</span>
+    </button>
+    <button class="pay has-photo" onclick="openLink('https://t.me/anzllaa_info/10')">
+      <img class="pay-photo" src="https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/anzllaa_testi.png" alt="Testimoni">
+      <span class="pay-label">TESTI</span>
+    </button>
+  </div>
+
+  <div class="note">Pilih menu di atas untuk membuka QRIS, Grup WhatsApp, atau Bot Telegram.</div>
+
+  <div class="player" id="player">
+    <div class="controls">
+      <button class="ctrl" onclick="prevSong()">⏮</button>
+      <button class="ctrl play" id="playBtn" onclick="toggleMusic()">▶</button>
+      <button class="ctrl" onclick="nextSong()">⏭</button>
+    </div>
+    <div class="song" id="songName">ANZLLAA • BLUE DREAM</div>
+    <audio id="musicAudio" class="music-file" preload="metadata"></audio>
+    <div class="wave" id="wave">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 ANZLLAA STORE • PAYMENT PAGE</div>
+</div>
+
+<div class="modal" id="qrModal">
+  <div class="card">
+    <h2>QRIS PAYMENT</h2>
+    <p>Scan QRIS di bawah untuk melakukan pembayaran.</p>
+    <div class="qr">
+      <!-- GANTI src DI BAWAH DENGAN FILE QRIS MILIKMU, contoh: qris.png -->
+      <img id="qrisImage" alt="QRIS" src="https://github.com/TanzManuel/qrisanzllaa/blob/main/qris.jpg?raw=true"
+           onerror="this.style.display='none';this.parentElement.innerHTML='<b style=&quot;font-family:Arial;color:#777&quot;>QRIS IMAGE<br>qris.png<br><small>Masukkan gambar QRIS kamu di folder yang sama.</small></b>'">
+    </div>
+    <button class="close" onclick="closeModal('qrModal')">TUTUP</button>
+  </div>
+</div>
+
+<div class="modal" id="testiModal">
+  <div class="card">
+    <h2>TESTIMONI</h2>
+    <p>Terima kasih sudah melakukan pembayaran di ANZLLAA STORE ♡</p>
+    <p style="margin-top:12px">Tambahkan foto / testimoni pelanggan sendiri di bagian ini.</p>
+    <button class="close" onclick="closeModal('testiModal')">TUTUP</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Nomor berhasil disalin!</div>
+
+<script>
+/* =========================
+   PENGATURAN — EDIT BAGIAN INI
+   ========================= */
+const PAYMENT = {
+  DANA: "081234567890",
+  GOPAY: "081234567890",
+  OVO: "081234567890",
+  SHOPEEPAY: "081234567890"
+};
+
+const STORE_NAME = "ANZLLAA STORE";
+
+/* =========================
+   KUSTOMISASI FOTO & MUSIK
+   =========================
+   Masukkan nama file yang kamu upload ke folder website.
+   Contoh: background.jpg, pp.jpg, banner.jpg, lagu.mp3
+*/
+const CUSTOM = {
+  BACKGROUND: "https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/background_anzllaa.jpg", // foto background seluruh halaman
+  HERO: "https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/anzllaa_banner.jpg",             // foto persegi panjang di bagian atas
+  AVATAR: "https://raw.githubusercontent.com/TanzManuel/qrisanzllaa/refs/heads/main/profanzllaa.jpg",               // foto PP bulat
+  MUSIC: [
+    {name:"Style - Taylor Swift", file:"https://github.com/TanzManuel/qrisanzllaa/raw/refs/heads/main/style%20taylor%20swift.mp3"},
+    {name:"Daylight - Taylor Swift", file:"https://github.com/TanzManuel/qrisanzllaa/raw/refs/heads/main/Daylight-taylor%20swift.mp3"},
+    {name:"Blue - Yung Kai", file:"https://github.com/TanzManuel/qrisanzllaa/raw/refs/heads/main/blue-yung%20kai.mp3"},
+    {name:"Blank Space - Taylor Swift", file:"https://github.com/TanzManuel/qrisanzllaa/raw/refs/heads/main/blank%20space-taylor%20swift.mp3"}
+  ]
+};
+
+/* Clock */
+function updateClock(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,"0");
+  document.getElementById("clock").textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+setInterval(updateClock,1000); updateClock();
+document.getElementById("storeName").textContent=STORE_NAME;
+
+/* Copy payment number */
+async function copyPayment(method){
+  const number=PAYMENT[method];
+  try{
+    await navigator.clipboard.writeText(number);
+  }catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=number;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+  }
+  showToast(`${method} • nomor berhasil disalin`);
+}
+
+/* Modal */
+function showQRIS(){document.getElementById("qrModal").classList.add("show")}
+function showTesti(){document.getElementById("testiModal").classList.add("show")}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{
+  if(e.target===m)m.classList.remove("show")
+}));
+
+function showToast(text){
+  const t=document.getElementById("toast");
+  t.textContent=text;t.classList.add("show");
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+function openLink(url){
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/* =========================
+   MUSIC DARI FILE SENDIRI
+   ========================= */
+const musicAudio=document.getElementById("musicAudio");
+let musicIndex=0, playing=false;
+function setSong(index,autoplay=false){
+  if(!CUSTOM.MUSIC.length)return;
+  musicIndex=(index+CUSTOM.MUSIC.length)%CUSTOM.MUSIC.length;
+  const song=CUSTOM.MUSIC[musicIndex];
+  musicAudio.src=song.file;
+  document.getElementById("songName").textContent=song.name;
+  if(autoplay) musicAudio.play().catch(()=>{});
+}
+async function toggleMusic(){
+  if(!CUSTOM.MUSIC.length){showToast("Tambahkan file musik di CUSTOM.MUSIC");return;}
+  if(!musicAudio.src)setSong(0,false);
+  try{
+    if(musicAudio.paused){await musicAudio.play();playing=true;}
+    else{musicAudio.pause();playing=false;}
+    document.getElementById("playBtn").textContent=playing?"Ⅱ":"▶";
+    document.getElementById("player").classList.toggle("playing",playing);
+  }catch(e){showToast("File musik tidak ditemukan");}
+}
+function prevSong(){setSong(musicIndex-1,playing);}
+function nextSong(){setSong(musicIndex+1,playing);}
+musicAudio.addEventListener("ended",()=>nextSong());
+setSong(0,false);
+
+/* Terapkan foto kustom */
+(function applyCustomImages(){
+  const root=document.documentElement;
+  if(CUSTOM.BACKGROUND) root.style.setProperty("--page-bg",`linear-gradient(rgba(0,15,35,.22),rgba(0,15,35,.22)),url("${CUSTOM.BACKGROUND}")`);
+  if(CUSTOM.HERO){
+    const hero=document.getElementById("hero");
+    hero.classList.add("has-image");
+    root.style.setProperty("--hero-bg",`url("${CUSTOM.HERO}")`);
+  }
+  if(CUSTOM.AVATAR){
+    const avatar=document.getElementById("avatar");
+    avatar.classList.add("has-image");
+    root.style.setProperty("--avatar-bg",`url("${CUSTOM.AVATAR}")`);
+    avatar.textContent="";
+  }
+})();
+
+/* Falling ❄️ ☃️ ☁️ 🦢 🥶 🐋 emotes */
+(function(){const box=document.querySelector('.snow-emotes'),emotes=['❄️','❄️','❄️','☃️','☁️','🦢','🥶','🐋','❄️','☁️','🦢','🐋'];for(let i=0;i<24;i++){const el=document.createElement('span');el.className='snow-emote';el.textContent=emotes[i%emotes.length];const sway=n=>((Math.random()*2-1)*n).toFixed(0)+'px';el.style.setProperty('--x',(Math.random()*100).toFixed(2)+'vw');el.style.setProperty('--size',(12+Math.random()*17).toFixed(1)+'px');el.style.setProperty('--duration',(7+Math.random()*9).toFixed(2)+'s');el.style.setProperty('--delay',(-Math.random()*14).toFixed(2)+'s');el.style.setProperty('--opacity',(0.35+Math.random()*0.55).toFixed(2));el.style.setProperty('--sway1',sway(45));el.style.setProperty('--sway2',sway(75));el.style.setProperty('--sway3',sway(55));el.style.setProperty('--sway4',sway(90));box.appendChild(el)}})();
+
+/* Suara klik lebih nyaring dan tajam */
+let clickAudioCtx=null;
+function playClickSound(){
+  try{
+    clickAudioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    if(clickAudioCtx.state==="suspended")clickAudioCtx.resume();
+    const now=clickAudioCtx.currentTime;
+    // klik utama
+    const osc=clickAudioCtx.createOscillator();
+    const gain=clickAudioCtx.createGain();
+    osc.type="square";
+    osc.frequency.setValueAtTime(1450,now);
+    osc.frequency.exponentialRampToValueAtTime(760,now+0.045);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.22,now+0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.075);
+    osc.connect(gain);gain.connect(clickAudioCtx.destination);
+    osc.start(now);osc.stop(now+0.08);
+    // bunyi kecil "tick" kedua agar lebih jelas di HP
+    const osc2=clickAudioCtx.createOscillator();
+    const gain2=clickAudioCtx.createGain();
+    osc2.type="triangle";osc2.frequency.value=2400;
+    gain2.gain.setValueAtTime(0.0001,now);
+    gain2.gain.exponentialRampToValueAtTime(0.10,now+0.002);
+    gain2.gain.exponentialRampToValueAtTime(0.0001,now+0.035);
+    osc2.connect(gain2);gain2.connect(clickAudioCtx.destination);
+    osc2.start(now);osc2.stop(now+0.04);
+  }catch(e){}
+}
+document.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",playClickSound,{capture:true}));
+
+</script>
